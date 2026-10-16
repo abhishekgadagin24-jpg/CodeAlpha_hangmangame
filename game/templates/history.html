@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Game History - Hangman Game{% endblock %}
+
+{% block content %}
+<div class="history-page-container">
+    <div class="card history-card">
+        <div class="history-header">
+            <div class="header-icon-badge">📜</div>
+            <h2>Match History for {{ user.username }}</h2>
+            <p class="text-muted">Review all your previous Hangman games saved in MySQL</p>
+        </div>
+
+        <!-- Player Summary Stats Cards -->
+        <div class="stats-overview-grid">
+            <div class="summary-card">
+                <span class="summary-label">Total Matches</span>
+                <strong class="summary-number">{{ total_games }}</strong>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Matches Won</span>
+                <strong class="summary-number text-success">{{ games_won }}</strong>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Win Ratio</span>
+                <strong class="summary-number text-info">{{ win_rate }}%</strong>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Total Points</span>
+                <strong class="summary-number text-primary">{{ total_score }}</strong>
+            </div>
+        </div>
+
+        {% if games %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date & Time</th>
+                            <th>Word</th>
+                            <th class="text-center">Result</th>
+                            <th class="text-center">Mistakes</th>
+                            <th class="text-center">Guesses</th>
+                            <th class="text-right">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in games %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-muted">{{ match.played_at|date:"M d, Y - H:i" }}</td>
+                                <td><code class="word-code">{{ match.word }}</code></td>
+                                <td class="text-center">
+                                    {% if match.status == 'WON' %}
+                                        <span class="badge badge-success">✓ WON</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">✗ LOST</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ match.incorrect_guesses }} / 6</td>
+                                <td class="text-center">{{ match.attempts_used }}</td>
+                                <td class="text-right">
+                                    <strong class="score-highlight">{{ match.score }} pts</strong>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🎯</div>
+                <h3>No Recorded Matches Yet</h3>
+                <p class="text-muted">You haven't completed any Hangman games yet with this account. Jump in and start guessing!</p>
+                <div class="empty-state-action">
+                    <a href="{% url 'game' %}" class="btn btn-primary btn-lg">Play Your First Game</a>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="history-footer">
+            <a href="{% url 'game' %}" class="btn btn-primary">🎮 Play Another Game</a>
+            <a href="{% url 'leaderboard' %}" class="btn btn-outline">🏆 View Leaderboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leaderboard - Hangman Game{% endblock %}
+
+{% block content %}
+<div class="leaderboard-page-container">
+    <div class="card leaderboard-card">
+        <div class="leaderboard-header">
+            <div class="header-icon-badge">🏆</div>
+            <h2>Hall of Fame & Leaderboard</h2>
+            <p class="text-muted">Top players ranked by total points scored from verified MySQL matches</p>
+        </div>
+
+        {% if leaderboard %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 80px;">Rank</th>
+                            <th>Player</th>
+                            <th class="text-center">Games Played</th>
+                            <th class="text-center">Games Won</th>
+                            <th class="text-center">Win Rate</th>
+                            <th class="text-right">Total Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in leaderboard %}
+                            <tr class="{% if user.is_authenticated and entry.username == user.username %}table-row-highlight{% endif %}">
+                                <td class="text-center">
+                                    {% if entry.rank == 1 %}
+                                        <span class="rank-pill rank-1">🥇 1</span>
+                                    {% elif entry.rank == 2 %}
+                                        <span class="rank-pill rank-2">🥈 2</span>
+                                    {% elif entry.rank == 3 %}
+                                        <span class="rank-pill rank-3">🥉 3</span>
+                                    {% else %}
+                                        <span class="rank-pill rank-other">{{ entry.rank }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ entry.username }}</strong>
+                                    {% if user.is_authenticated and entry.username == user.username %}
+                                        <span class="badge badge-info ml-1">You</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ entry.total_games }}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-success">{{ entry.games_won }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="win-rate-indicator">
+                                        <span>{{ entry.win_rate }}%</span>
+                                    </div>
+                                </td>
+                                <td class="text-right">
+                                    <span class="total-score-text">{{ entry.total_score }} pts</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🎮</div>
+                <h3>No Completed Games Found</h3>
+                <p class="text-muted">No registered player has completed any games yet. Be the first one to claim the top spot!</p>
+                <div class="empty-state-action">
+                    <a href="{% url 'game' %}" class="btn btn-primary btn-lg">Play Hangman Now</a>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="leaderboard-footer">
+            {% if user.is_authenticated %}
+                <a href="{% url 'history' %}" class="btn btn-outline">View My Match History &rarr;</a>
+            {% else %}
+                <p class="text-muted small">Want your scores recorded on the board? <a href="{% url 'register' %}">Sign up for an account</a> or <a href="{% url 'login' %}">Log in</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

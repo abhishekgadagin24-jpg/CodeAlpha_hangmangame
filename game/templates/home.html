@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Hangman Game{% endblock %}
+
+{% block content %}
+<div class="home-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-card card">
+        <div class="hero-badge">🎯 Word Guessing Challenge</div>
+        <h2 class="hero-headline">Test Your Vocabulary & Logic</h2>
+        <p class="hero-description">
+            Welcome to the Hangman Game! Can you crack the mystery word before your chances run out?
+            Guess letter by letter, protect your attempts, and compete for the highest score on the global leaderboard.
+        </p>
+        
+        <div class="hero-actions">
+            <a href="{% url 'game' %}" class="btn btn-lg btn-primary pulse-btn">🎮 Play Now</a>
+            <a href="{% url 'leaderboard' %}" class="btn btn-lg btn-outline">🏆 View Leaderboard</a>
+        </div>
+    </section>
+
+    <!-- Two-Column Information Section -->
+    <div class="grid-2-col">
+        <!-- How to Play Section -->
+        <section class="card info-card">
+            <div class="card-header-styled">
+                <span class="icon-circle">📖</span>
+                <h3>How to Play</h3>
+            </div>
+            <ol class="steps-list">
+                <li>
+                    <span class="step-num">1</span>
+                    <div class="step-content">
+                        <strong>Start a new game:</strong> A secret word is randomly picked by the backend.
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">2</span>
+                    <div class="step-content">
+                        <strong>Guess one letter at a time:</strong> Click the on-screen letters or press keyboard keys.
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">3</span>
+                    <div class="step-content">
+                        <strong>Correct guesses reveal letters:</strong> Positions will be displayed on the word board.
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">4</span>
+                    <div class="step-content">
+                        <strong>Incorrect guesses reduce chances:</strong> Each wrong guess draws a piece of the hangman.
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">5</span>
+                    <div class="step-content">
+                        <strong>Win before 6 mistakes:</strong> Guess the entire word before reaching 6 incorrect attempts!
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Game Rules Section -->
+        <section class="card info-card">
+            <div class="card-header-styled">
+                <span class="icon-circle">⚖️</span>
+                <h3>Game Rules</h3>
+            </div>
+            <ul class="rules-list">
+                <li><span class="check-icon">✓</span> <strong>Maximum 6 Incorrect Guesses:</strong> On the 6th wrong guess, the game is over.</li>
+                <li><span class="check-icon">✓</span> <strong>No Repeated Penalty:</strong> Guessing the same letter twice is prevented and will not cost you an attempt.</li>
+                <li><span class="check-icon">✓</span> <strong>Case-Insensitive:</strong> Both lowercase and uppercase letters are accepted identically.</li>
+                <li><span class="check-icon">✓</span> <strong>Scoring System:</strong>
+                    <div class="score-formula">
+                        <code>Win = 100 - (10 × Incorrect Guesses)</code>
+                        <p class="score-note">Example: Win with 2 mistakes = 80 points. Losses award 0 points.</p>
+                    </div>
+                </li>
+                <li><span class="check-icon">✓</span> <strong>Predefined Dictionary:</strong> Features 5 core tech words: PYTHON, DJANGO, COMPUTER, PROGRAM, DATABASE.</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- Bottom Section: Auth CTA & Leaderboard Preview -->
+    <div class="grid-2-col">
+        <!-- Auth / Member Section -->
+        <section class="card auth-promo-card">
+            {% if user.is_authenticated %}
+                <div class="auth-promo-content">
+                    <span class="icon-badge">🌟</span>
+                    <h3>Welcome back, {{ user.username }}!</h3>
+                    <p>Your games and scores are automatically saved to MySQL. Check out your personal gameplay records and see how much you've improved.</p>
+                    <div class="action-row">
+                        <a href="{% url 'history' %}" class="btn btn-primary">View My Game History</a>
+                        <a href="{% url 'game' %}" class="btn btn-success">Jump into Game</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="auth-promo-content">
+                    <span class="icon-badge">🔐</span>
+                    <h3>Track Your High Scores</h3>
+                    <p>You can play right now as a guest! Or create a free player account to save your wins, track your score history, and claim your spot on the leaderboard.</p>
+                    <div class="action-row">
+                        <a href="{% url 'register' %}" class="btn btn-primary">Create Free Account</a>
+                        <a href="{% url 'login' %}" class="btn btn-outline">Player Login</a>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Leaderboard Preview -->
+        <section class="card leaderboard-preview-card">
+            <div class="card-header-styled flex-between">
+                <div class="header-left">
+                    <span class="icon-circle">🏆</span>
+                    <h3>Top Players</h3>
+                </div>
+                <a href="{% url 'leaderboard' %}" class="view-all-link">Full Board &rarr;</a>
+            </div>
+
+            {% if top_players %}
+                <div class="table-responsive">
+                    <table class="table table-compact">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th>Wins</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for player in top_players %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+                                    </td>
+                                    <td><strong>{{ player.user__username }}</strong></td>
+                                    <td><span class="badge badge-success">{{ player.games_won }}</span></td>
+                                    <td><strong class="score-highlight">{{ player.total_score }} pts</strong></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p class="text-muted">No completed games yet. Be the first player to score points!</p>
+                    <a href="{% url 'game' %}" class="btn btn-sm btn-primary">Play First Round</a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

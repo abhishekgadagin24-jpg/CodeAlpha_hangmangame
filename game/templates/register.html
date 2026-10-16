@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Player Registration - Hangman Game{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card card">
+        <div class="auth-card-header">
+            <span class="auth-header-icon">📝</span>
+            <h2>Create Player Account</h2>
+            <p class="text-muted">Register to save your game scores and earn your spot on the leaderboard</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'register' %}" class="auth-form" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <span class="form-error">{{ form.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <span class="form-error">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                {{ form.password }}
+                {% if form.password.help_text %}
+                    <small class="form-help">{{ form.password.help_text }}</small>
+                {% endif %}
+                {% if form.password.errors %}
+                    <span class="form-error">{{ form.password.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.confirm_password.id_for_label }}" class="form-label">Confirm Password</label>
+                {{ form.confirm_password }}
+                {% if form.confirm_password.errors %}
+                    <span class="form-error">{{ form.confirm_password.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-auth-submit">
+                Register & Start Playing
+            </button>
+        </form>
+
+        <div class="auth-footer-prompt">
+            <p>Already have an account? <a href="{% url 'login' %}" class="auth-switch-link">Log in here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

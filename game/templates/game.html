@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Play Hangman - Interactive Word Guessing{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-card card">
+        <!-- Game Header / Status Bar -->
+        <div class="game-card-header">
+            <div class="status-badge-container">
+                <span class="status-label">Status:</span>
+                <span id="gameStatusBadge" class="badge {% if game.status == 'WON' %}badge-success{% elif game.status == 'LOST' %}badge-danger{% else %}badge-info{% endif %}">
+                    {% if game.status == 'WON' %}🎉 WON{% elif game.status == 'LOST' %}💀 LOST{% else %}🕹️ PLAYING{% endif %}
+                </span>
+            </div>
+            
+            <div class="score-display">
+                <span class="score-label">Points Earned:</span>
+                <strong id="gameScoreValue" class="score-value">{{ game.score }}</strong>
+            </div>
+        </div>
+
+        <!-- Feedback Alert Banner -->
+        <div id="gameMessageBox" class="game-message alert alert-{{ game.message_type }}" role="alert">
+            <span id="gameMessageText">{{ game.message }}</span>
+        </div>
+
+        <!-- Upper Board: Visual Hangman & Statistics -->
+        <div class="game-upper-board">
+            <!-- Hangman SVG Graphic -->
+            <div class="hangman-visual-box">
+                <svg id="hangmanSvg" viewBox="0 0 200 240" class="hangman-svg" aria-label="Hangman visual display">
+                    <!-- Base / Gallows Structure -->
+                    <line x1="20" y1="220" x2="180" y2="220" class="gallows-base" />
+                    <line x1="60" y1="220" x2="60" y2="20" class="gallows-pole" />
+                    <line x1="60" y1="20" x2="140" y2="20" class="gallows-beam" />
+                    <line x1="60" y1="60" x2="100" y2="20" class="gallows-brace" />
+                    <line x1="140" y1="20" x2="140" y2="50" class="gallows-rope" />
+
+                    <!-- Hangman Body Parts (Revealed step-by-step: 1 to 6) -->
+                    <!-- Step 1: Head -->
+                    <circle id="partHead" cx="140" cy="70" r="20" class="body-part {% if game.incorrect_guesses >= 1 %}part-visible{% endif %}" />
+                    
+                    <!-- Step 2: Body -->
+                    <line id="partBody" x1="140" y1="90" x2="140" y2="150" class="body-part {% if game.incorrect_guesses >= 2 %}part-visible{% endif %}" />
+                    
+                    <!-- Step 3: Left Arm -->
+                    <line id="partLeftArm" x1="140" y1="110" x2="110" y2="135" class="body-part {% if game.incorrect_guesses >= 3 %}part-visible{% endif %}" />
+                    
+                    <!-- Step 4: Right Arm -->
+                    <line id="partRightArm" x1="140" y1="110" x2="170" y2="135" class="body-part {% if game.incorrect_guesses >= 4 %}part-visible{% endif %}" />
+                    
+                    <!-- Step 5: Left Leg -->
+                    <line id="partLeftLeg" x1="140" y1="150" x2="115" y2="200" class="body-part {% if game.incorrect_guesses >= 5 %}part-visible{% endif %}" />
+                    
+                    <!-- Step 6: Right Leg -->
+                    <line id="partRightLeg" x1="140" y1="150" x2="165" y2="200" class="body-part {% if game.incorrect_guesses >= 6 %}part-visible{% endif %}" />
+                </svg>
+            </div>
+
+            <!-- Statistics Box -->
+            <div class="game-stats-box">
+                <h4 class="stats-heading">Game Statistics</h4>
+                
+                <div class="stat-row">
+                    <span class="stat-name">Incorrect Guesses:</span>
+                    <span class="stat-value"><strong id="statIncorrectCount">{{ game.incorrect_guesses }}</strong> / {{ game.max_incorrect_guesses }}</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-name">Remaining Chances:</span>
+                    <span class="stat-value highlight-attempts"><strong id="statRemainingCount">{{ game.remaining_attempts }}</strong></span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-name">Total Guesses Made:</span>
+                    <span class="stat-value"><strong id="statAttemptsUsed">{{ game.attempts_used }}</strong></span>
+                </div>
+
+                <!-- Progress Bar of Mistakes -->
+                <div class="mistake-progress-wrapper">
+                    <div class="progress-bar-bg">
+                        <div id="mistakeProgressBar" class="progress-bar-fill" style="width: calc(({{ game.incorrect_guesses }} / 6) * 100%);"></div>
+                    </div>
+                </div>
+
+                <!-- Lists of Guessed Letters -->
+                <div class="guessed-summary">
+                    <div class="guessed-group">
+                        <span class="group-title">Correct Letters:</span>
+                        <div id="correctLettersList" class="letter-tags-container">
+                            {% for char in game.correct_letters %}
+                                <span class="tag tag-correct">{{ char }}</span>
+                            {% empty %}
+                                <span class="text-muted small">None yet</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="guessed-group">
+                        <span class="group-title">Incorrect Letters:</span>
+                        <div id="incorrectLettersList" class="letter-tags-container">
+                            {% for char in game.incorrect_letters %}
+                                <span class="tag tag-incorrect">{{ char }}</span>
+                            {% empty %}
+                                <span class="text-muted small">None yet</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Word Display Area -->
+        <div class="word-display-section">
+            <p class="section-label">Guess the Secret Word:</p>
+            <div id="wordDisplay" class="word-slots-container" aria-live="polite">
+                {% for char in game.masked_word %}
+                    <span class="letter-slot {% if char != '_' %}revealed{% endif %}">
+                        {{ char }}
+                    </span>
+                {% endfor %}
+            </div>
+            
+            <!-- End Game Reveal Banner -->
+            <div id="wordRevealBox" class="word-reveal-box {% if game.is_game_over %}is-visible{% endif %}">
+                {% if game.is_game_over %}
+                    <p class="reveal-text">
+                        The correct word was: <strong class="revealed-word-text">{{ game.revealed_word }}</strong>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- On-Screen Virtual Keyboard (Letters A to Z) -->
+        <div class="keyboard-section">
+            <p class="keyboard-instruction">Click a letter button or type on your keyboard:</p>
+            <div class="keyboard-grid" id="keyboardGrid">
+                {% for item in alphabet %}
+                    <button 
+                        type="button" 
+                        class="key-btn key-{{ item.state }}" 
+                        data-letter="{{ item.letter }}" 
+                        {% if item.disabled %}disabled{% endif %}
+                        aria-label="Guess letter {{ item.letter }}"
+                    >
+                        {{ item.letter }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="game-actions-footer">
+            <button id="btnNewGame" type="button" class="btn btn-primary btn-game-action">
+                🔄 New Game
+            </button>
+            <button id="btnRestartGame" type="button" class="btn btn-warning btn-game-action">
+                🔁 Restart Game
+            </button>
+            <a href="{% url 'home' %}" class="btn btn-outline btn-game-action">
+                🏠 Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'game/js/game.js' %}"></script>
+{% endblock %}
