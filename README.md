@@ -35,7 +35,7 @@ A modern, responsive, and full-stack interactive Hangman word-guessing web appli
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/rakeshsg4352-dotcom/CodeAlpha_HangmanGame.git
+git clone https://github.com/abhishekgadagin24-jpg/CodeAlpha_HangmanGame.git
 cd CodeAlpha_HangmanGame
 ```
 
@@ -78,4 +78,4 @@ python manage.py test game
 ---
 
 ## 👤 Author
-- **GitHub:** [@rakeshsg4352-dotcom](https://github.com/rakeshsg4352-dotcom)
+- **GitHub:** [@abhishekgadagin24-jpg](https://github.com/abhishekgadagin24-jpg)
