@@ -35,8 +35,8 @@ A modern, responsive, and full-stack interactive Hangman word-guessing web appli
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/rakeshsg4352-dotcom/HangmanGame.git
-cd HangmanGame
+git clone https://github.com/rakeshsg4352-dotcom/CodeAlpha_HangmanGame.git
+cd CodeAlpha_HangmanGame
 ```
 
 ### 3. Create & Activate Virtual Environment
